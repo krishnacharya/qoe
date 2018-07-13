@@ -1,0 +1,40 @@
+
+Analysis Res: class 1 S: 0.00000, B: 0.00000, Q: 1114793.856, NQS: 419.872, RQS: 0.350, D: 0.369, PD: 0.626, PF: 0.37365,
+Analysis steady state distr (USER).: 0.00030, 0.00362, 0.02175, 0.08699, 0.26098, 0.62635, 
+
+
+SIM Res: class 1 S: 0.00000, B: 0.00000, Q: 1004999.008, NQS: 472.696, RQS: 0.382, D: 0.383, PD: 0.736, PF: 1.00000, DT: 1224.448
+SIM duration: 10000.0
+SIM sanity TV (distr): 0.03790, number of users: 23
+SIM steady state distr (SYSTEM).: 0, 0, 0.00984, 0.04926, 0.20735, 0.73355, 
+SIM steady state distr (USER).: 0, 0, 0.02174, 0.05435, 0.22826, 0.69565, 
+
+
+SIM Res: class 1 S: 0.00000, B: 0.00000, Q: 1059698.768, NQS: 225.742, RQS: 0.279, D: 0.377, PD: 0.575, PF: 1.00000, DT: 794.752
+SIM duration: 10000.0
+SIM sanity TV (distr): 0.03888, number of users: 31
+SIM steady state distr (SYSTEM).: 0, 0, 0.03841, 0.10332, 0.33300, 0.52527, 
+SIM steady state distr (USER).: 0, 0, 0.06410, 0.10256, 0.29487, 0.53846, 
+
+
+SIM Res: class 1 S: 0.00000, B: 0.00000, Q: 996880.556, NQS: 291.724, RQS: 0.337, D: 0.386, PD: 0.663, PF: 1.00000, DT: 851.252
+SIM duration: 10000.0
+SIM sanity TV (distr): 0.03827, number of users: 29
+SIM steady state distr (SYSTEM).: 0, 0, 0.01088, 0.05985, 0.30494, 0.62433, 
+SIM steady state distr (USER).: 0, 0, 0.02222, 0.07778, 0.26667, 0.63333, 
+
+
+SIM FINAL Res: class 1 S: 0.00000, B: 0.00000, Q: 1020526.111, NQS: 330.054, RQS: 0.333, D: 0.382, PD: 0.658
+SIM Dev: class 1 S: 0.00000, B: 0.00000, Q: 34166.506, NQS: 127.861, RQS: 0.052, D: 0.004, PD: 0.080
+
+
+Analysis Res: class 1 S: 0.00000, B: 0.00000, Q: 596868.987, NQS: 257.779, RQS: 0.215, D: 0.694, PD: 0.302, PF: 0.69807,
+Analysis steady state distr (USER).: 0.00002, 0.00021, 0.00127, 0.00510, 0.01529, 0.03669, 0.07338, 0.12580, 0.18870, 0.25160, 0.30193, 
+
+
+SIM Res: class 1 S: 0.00000, B: 0.00000, Q: 562654.176, NQS: 259.338, RQS: 0.222, D: 0.718, PD: 0.293, PF: 1.00000, DT: 1156.622
+SIM duration: 100000.0
+SIM sanity TV (distr): 0.02337, number of users: 701
+SIM steady state distr (SYSTEM).: 0, 0, 0, 0.00606, 0.01385, 0.03042, 0.06525, 0.11939, 0.20014, 0.27820, 0.28671, 
+SIM steady state distr (USER).: 0, 0, 0, 0.00500, 0.01299, 0.03197, 0.06593, 0.12488, 0.21279, 0.25674, 0.28971, 
+

@@ -1,0 +1,14 @@
+
+% WHICH FILE TO RUN?
+Run the script checkScript.m with appropriate input parameters.
+See file for details of input parameters.
+
+% WHERE ARE THE RESULTS?
+It will run simulations and the corresponding analysis results will be 
+printed.
+Check "*results*.txt" file for results at the end of simulation.
+
+% I AM GETTING '-1's AS OUTPUT
+A value for -1 for the simulation output variables indicates that the number of 
+users that entered the system in the simulation were insufficient to get results.
+Increase the avgUsersSim variable in checkScript.m
