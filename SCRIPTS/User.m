@@ -9,7 +9,7 @@ classdef User
         totalNbrOfSegments;
         bufferLevel=0;
         currentSegment=0;
-        slotsUsed=0;% an attribute that stores the number of simulation slots used, 
+        slotsUsed = 0;% an attribute that stores the number of simulation slots used, 
         %ideal use case is to find slots used for each segment then update it to zero for the next one.
         prevQuality=0;
         currentQuality;

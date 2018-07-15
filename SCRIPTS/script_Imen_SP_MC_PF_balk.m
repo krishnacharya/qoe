@@ -1,4 +1,4 @@
-function [pi, pi_2, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
+function [pi, pi_2, user,   probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
     avgPrefetchTimeClass, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
     script_Imen_SP_MC_PF_balk(arrivalRateVec, avgVideoSizeVec, ...
     channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, videorateMatrix, ...
@@ -45,7 +45,8 @@ function [pi, pi_2, probStarvClass, probVBClass, probFinishClass, probDropClass,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-rng('shuffle');
+% rng('shuffle');
+rand('state', 42) ;%just seeding with 42
 paramsDASH(1:length(maxUsersVec)) = struct;
 minRateVec = zeros(1,length(maxUsersVec));
 %% DASH parameter settings
@@ -70,8 +71,8 @@ for jj = 1:prod(maxUsersVec + 1),
 end
 
 %% Simulation Parameters
-simSlotsPerSec = max(10, round(10*min(arrivalRateVec)));%change this to max or sum of all arr
-simTime = avgUsersSim/sum(arrivalRateVec); % simulation duration in seconds
+%simSlotsPerSec = max(10, round(10*min(arrivalRateVec)));%change this to max or sum of all arr
+simSlotsPerSec = ceil(10 * sum(arrivalRateVec));simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime*simSlotsPerSec); % in sim. slots
 startTime = floor(0.1*simulationDuration); % discard initial 10 % samples
 userThreshold = 2*sum(maxUsersVec); % discard userThreshold users
@@ -147,7 +148,6 @@ for s = 1:simulationDuration,  % in simulation slots
             u_.totalNbrOfSegments = max(1, round(u_.videoLength * paramsDASH(userType).segPerSec)); % Video length in segments
             u_.usersInSystem = userVec;
             u_.entryTime = s;
-            user = [user u_];% will give an error maybe they were trying to append this new user?
             userVec(userType) = userVec(userType) + 1;
             
             % User balking rate changed:
@@ -220,7 +220,7 @@ for s = 1:simulationDuration,  % in simulation slots
         rateVec = rateVec/dr_lhs;
         depFlag = 0;
         prevUserVec = userVec;
-        for i = s_idx:length(user)
+        for i = 1:length(user)
             if  (user(i).state < 2)
                 if (0 == s_flag)%worthless check
                     s_idx = i;
@@ -229,7 +229,7 @@ for s = 1:simulationDuration,  % in simulation slots
                 if ( badStates(user(i).class, codeUserVec(userVec, maxUsersVec) ) == 1)
                     user(i).visitsBadState = 1;
                 end
-                [user(i), userVec(user(i).class)] = DASH_SP(paramsDASH(user(i).class), segPerSlotVec(user(i).class), user(i), s, ...
+                [user(i), userVec(user(i).class)] = DASH_KR(paramsDASH(user(i).class), segPerSlotVec(user(i).class), user(i), s, ...
                     rateVec(user(i).class), userVec(user(i).class), bThres{user(i).class}, idThres{user(i).class});                
                 if(prevUserVec(user(i).class) < userVec(user(i).class)) %check this
                     depFlag = 1;

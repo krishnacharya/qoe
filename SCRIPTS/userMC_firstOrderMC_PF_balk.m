@@ -95,7 +95,7 @@ end;
 
 vQualMat = zeros(numClasses,numStates);
 rateMat = zeros(numClasses,numStates);
-for jj = 1:numStates,
+for jj = 2:numStates,
     userVec = getUserVec(jj, maxUsersVec); % idx --> (i_1, i_2, ..., i_K)
     nr_lhs = weightVec(userVec > 0)*channelRate;
     dr_lhs = sum(userVec); % price for PF
@@ -138,7 +138,8 @@ for kk=1:numClasses,
     listStates = 1:length(badStates(kk,:)); % this is just the number of states (N1+1) * (N2+1) etc
     validStates = listStates(badStates(kk,:) == 0 | badStates(kk,:) == 1); % valid state can be good or bad.
     probFinishingMat(kk, validStates) = computeProbFinishing(trm2{kk}, badStates(kk,:));
-    pyeTimesprobFinishingMat(kk, :) = pye.* probFinishingMat(kk,:);
+    temp = probFinishingMat(kk, :);
+    pyeTimesprobFinishingMat(kk, :) = pye' .* temp; %pye is 21x1 in shape 
     probFinishing(kk) = sum(pyeTimesprobFinishingMat(kk, :));
     probBlocking(kk) = probBlocking(kk) / (probFinishing(kk) + probBlocking(kk));
 end;
@@ -216,7 +217,7 @@ end
 
 
 fprintf(fid,'\nAnalysis steady state distr: ');
-printVec(fid, pye, length(pye));
+printVec(fid, pye', length(pye));
 
 for jj = 1:length(maxUsersVec),
     fprintf(fid,'\nAnalysis FINAL Res: class %d ', jj);

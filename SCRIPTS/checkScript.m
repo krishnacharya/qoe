@@ -12,7 +12,7 @@ avSizeVec = 1200; % E.g. [1200, 600]
 cRate = 5e6; % E.g., 5e6
 
 % Vector of multipliers for balking, higher values give higher balking rate
-gammaVec = 100.0; % E.g., [100.0, 100.0]
+gammaVec = 0; % E.g., [100.0, 100.0]
 
 % Vector or minimum rate required for user satisfaction, users MAY leave if 
 % rate received is less than this. [R_1, R_2, ...] R_k = rate threshold for 
@@ -37,7 +37,7 @@ videoRateMatrix = [0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6;
 % E.g., [0.2 0.3 4.3 5.3; 0.2 0.3 2.3 5.3]*1e6
 
 % The simulation will simulate (on average) avgUsersSim users entering the system
-avgUsersSim = 2000; % E.g. 2000
+avgUsersSim = 100; % E.g. 2000
 
 
 % DASH parameters, bmin, bmax, q_a (prefetch segments) and number of seconds per 
@@ -78,8 +78,6 @@ for ii = 1:length(arVec),
     fprintf(fid,'unif: %d\n', unifVec(ii));
 end;
 fprintf(fid,'cRate: %.1f\n', cRate);
-
-
 
 
 cd(analysisDir); % Analysis code in analysisDir
