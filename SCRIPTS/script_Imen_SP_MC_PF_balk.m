@@ -72,7 +72,8 @@ end
 
 %% Simulation Parameters
 %simSlotsPerSec = max(10, round(10*min(arrivalRateVec)));%change this to max or sum of all arr
-simSlotsPerSec = ceil(10 * sum(arrivalRateVec));simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
+simSlotsPerSec = ceil(10 * sum(arrivalRateVec));
+simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime*simSlotsPerSec); % in sim. slots
 startTime = floor(0.1*simulationDuration); % discard initial 10 % samples
 userThreshold = 2*sum(maxUsersVec); % discard userThreshold users
@@ -240,8 +241,7 @@ for s = 1:simulationDuration,  % in simulation slots
     numUsersMatrix(s,:) = userVec;
     
     % User balking rate changed:
-    if ( (s > 1) && (depFlag == 1) )
-        
+    if ( (s > 1) && (depFlag == 1) )        
         % Change balk time as num. users changed
         dr_lhs = sum(userVec);
         rateVec = zeros(1,length(maxUsersVec));

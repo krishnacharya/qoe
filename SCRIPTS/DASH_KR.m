@@ -1,4 +1,4 @@
-function [user, n_users] = DASH_KR(paramsDASH, segPerSlot, user, time, C_time, n_users, bThres, idThres)
+function [user, update] = DASH_KR(paramsDASH, segPerSlot, user, time, C_time, n_users, bThres, idThres, ScalarSystemState)
 % The DASH code 
 % This function simulates the DASH code 
 % It is run every simulation slot and in each sim. slot it
@@ -14,6 +14,7 @@ downloaded = 0;
 %totalC = C_time; % total bits available for this user in current sim slot
 epsilon = 1e-5;
 propSlot = 0;
+update = 0;
 % if user.currentSegment <= user.totalNbrOfSegments
 if (user.state == 0)
     if (user.currentSegment == user.totalNbrOfSegments)
@@ -23,7 +24,7 @@ if (user.state == 0)
         if (user.prefetchTime <= 0) % Video was delivered completely in prefetching.
             user.prefetchTime = time; % check this
         end
-        n_users = n_users - 1;
+        update = -1;
         return;
     end
     user.currentSegment = user.currentSegment + 1;
@@ -33,7 +34,7 @@ if (user.state == 0)
     % (buffer based decision)  STARTS HERE
     %printf('%duserBuffer \n',user.bufferLevel, paramsDASH.Bmin);
     %printf('%dBmin \n', user.bufferLevel, paramsDASH.Bmin);
-    if (user.bufferLevel <= 4)% paramsDASH.Bmin is 4
+    if (user.bufferLevel <= paramsDASH.Bmin)% paramsDASH.Bmin is 4
         user.currentQuality = paramsDASH.l(1);%the minimum bit rate
     else
         if (length(bThres) > 1) % DISCRETE quality levels
@@ -80,12 +81,16 @@ if (user.state == 1)
         user.propOfSegmentDownloaded = downProp + C_time / (user.currentQuality * slotPerSeg);
         downloaded = C_time / (user.currentQuality * slotPerSeg);%number of segments dowmloaded in this slot, it is mostly a fraction
     end
+    if(~user.isPlaying && user.bufferLevel == 0 && user.inPrefetch == 1)% occurs at the very beginning of prefetching
+        user.stateAtPrefetchStart = ScalarSystemState;%needs to be another field in the functions input
+    end
     if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
         % Find prefetch time:
         % For initial prefetching, starvedSegment is set to -1
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with
             user.prefetchTime = user.slotsUsed;% prefetch time in terms of number of slots used
+            user.inPrefetch = 0;
         end;
     end
 end
@@ -101,8 +106,7 @@ if user.bufferLevel <= 0
     user.starvedSegment = user.currentSegment;
 end
     
-% else
-%     user.state = 2;
-%     user.exitTime = time;
-% end
+else
+% user.state = 2;
+update = 0;
 end

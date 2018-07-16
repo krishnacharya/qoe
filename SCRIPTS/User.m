@@ -22,8 +22,9 @@ classdef User
         starvedSegment = -1;
         visitsBadState = 0;
         trace=trace_struct;
-        usersInSystem; % Number of existing users seen by arriving user
-        
+        usersInSystem; % Number of existing users seen by arriving user, can be associated with its prefetching delay too
+        stateAtPrefetchStart; % this is the state of the system when this user started prefetching 
+        inPrefetch = 1; % if user is in prefetch then this is 1 else 0 
         prefetchTime = -1;
         entryTime = -1;
         exitTime = -1;

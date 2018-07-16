@@ -6,8 +6,7 @@
 arVec = 0.01; % E.g. [0.01, 0.01]
 
 % Avg. Video size [\theta_1, \theta_2, ...]
-avSizeVec = 1200; % E.g. [1200, 600]
-
+avSizeVec = 1200; % E.g. [1200, 600
 % Channel rate (nominal) [aggregate rate available for class K  = wtVec[k]*cRate]
 cRate = 5e6; % E.g., 5e6, 5Mbps
 
@@ -27,7 +26,7 @@ wtVec = 1; % E.g., [1, 2]
 
 % Max. number of users per class [N_1, N_2, ...]
 % N_k = max. number of users of class k that can be there in the system.
-maxUsersVec = 20; % E.g., [10, 20]
+maxUsersVec = 100; % E.g., [10, 20]
 
 % Matrix of Available bit-rates
 % Row-i of videoRateMatrix gives the available bit rates for class-i.
@@ -36,7 +35,7 @@ maxUsersVec = 20; % E.g., [10, 20]
 videoRateMatrix = [0.2, 0.3, 0.48, 0.75, 1.2, 1.85, 2.85, 4.3, 5.3] * 1e6; 
 
 % The simulation will simulate (on average) avgUsersSim users entering the system
-avgUsersSim = 100; % E.g. 2000
+avgUsersSim = 1000; % E.g. 2000
 
 % DASH parameters, bmin, bmax, q_a (prefetch segments) and number of seconds per 
 % video segment respectively
@@ -62,14 +61,13 @@ fid = fopen(filename,'a+');
 
 [pi, pi_2, user, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
     avgPrefetchTimeClass, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
-    script_Imen_SP_MC_PF_balk(arVec, avSizeVec, cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec,videoRateMatrix, unifVec, avgUsersSim);
+    simscript(arVec, avSizeVec, cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec,videoRateMatrix, unifVec, avgUsersSim);
 
 [pye, probBlocking, probFinishing, probVB, probStarvation, avgQualSwitches, ...
     avgQuality, prefetchDelay] = ...
     userMC_firstOrderMC_PF_balk(arVec, avSizeVec, ...
     cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec, ...
     videoRateMatrix, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec);
-
 
 % fprintf(fid,'Pi user perspective\n');
 % printVec(fid, pi, length(pi));
