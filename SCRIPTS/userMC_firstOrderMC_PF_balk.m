@@ -1,5 +1,5 @@
 function [pye, probBlocking, probFinishing, probVB, probStarvation, avgQualSwitches, ...
-    avgQuality, prefetchDelay] = ...
+    avgQuality, prefetchDelay, prefetchDelayclassState] = ...
     userMC_firstOrderMC_PF_balk(arrivalRateVec, avgVideoSizeVec, ...
     channelRate, gammaVec, thresVec, weightVec, maxUsersVec, ...
     videoRateMat, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec)
@@ -180,6 +180,7 @@ end;
 
 % Compute average prefetchDelay
 prefetchDelay = zeros(1,numClasses);
+prefetchDelayclassState = zeros(numClasses, numStates);
 for kk=1:numClasses,
     effRateVec = zeros(1, numStates);
     for ii = 1:numStates,
@@ -189,6 +190,7 @@ for kk=1:numClasses,
             actualUserVec(kk) = userVec(kk) + 1;
             iiPlusOne = codeUserVec(actualUserVec, maxUsersVec);
             effRateVec(ii) = rateMat(kk,iiPlusOne);% r(i + ej)
+            prefetchDelayclassState(kk, ii) = prefetchVec(kk) * lminVec(kk) / rateMat(kk, iiPlusOne);
         end;
     end;
     

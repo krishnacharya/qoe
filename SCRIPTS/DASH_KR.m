@@ -71,7 +71,7 @@ if (user.state == 1)
     bitsRemainingforSegment = remProp * slotPerSeg * user.currentQuality;% current quality in bits per slot
     if (bitsRemainingforSegment < C_time) % C_time is the number of bits available in this simulation slot
         %C_time = C_time - capacityUsed;
-        downloaded = remProp;%number of segments dowmloaded in this slot            
+        downloaded = remProp;%number of segments downloaded in this slot            
         user.state = 0; %there are still some resources, DASH requests the next quality
         propSlot = bitsRemainingforSegment / C_time;
         user.slotsUsed = user.slotsUsed + propSlot;% rhs is the proportion of the slot used.
@@ -81,8 +81,9 @@ if (user.state == 1)
         user.propOfSegmentDownloaded = downProp + C_time / (user.currentQuality * slotPerSeg);
         downloaded = C_time / (user.currentQuality * slotPerSeg);%number of segments dowmloaded in this slot, it is mostly a fraction
     end
-    if(~user.isPlaying && user.bufferLevel == 0 && user.inPrefetch == 1)% occurs at the very beginning of prefetching
+    if(user.inPrefetchStart == 1)% occurs at the very beginning of prefetching
         user.stateAtPrefetchStart = ScalarSystemState;%needs to be another field in the functions input
+        user.inPrefetchStart = 0;
     end
     if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
@@ -90,7 +91,7 @@ if (user.state == 1)
         % For initial prefetching, starvedSegment is set to -1
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with
             user.prefetchTime = user.slotsUsed;% prefetch time in terms of number of slots used
-            user.inPrefetch = 0;
+            user.updateDelayMatrixFlag = 1;
         end;
     end
 end
@@ -102,11 +103,10 @@ if user.bufferLevel <= 0
     %starvation ; need to stop playing and prefetch qs segments
     user.bufferLevel = 0;
     user.isPlaying = 0;
-    %user.starv = 1;
     user.starvedSegment = user.currentSegment;
 end
     
-else
+%else
 % user.state = 2;
-update = 0;
+%update = 0;
 end

@@ -1,6 +1,6 @@
 function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
-    avgPrefetchTimeClass, avgPrefetchTimeClassandState,avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
-    simscript(arrivalRateVec, avgVideoSizeVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
+    avgPrefetchTimeClass, AvgPrefetchTimeij,avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+    simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
     videorateMatrix, unifVec, avgUsersSim)
 % balking added to Proportional fair sharing
 % unif for buffer spacing
@@ -49,7 +49,7 @@ minRateVec = zeros(1, numberOfClasses);
 %% DASH parameter settings
 for jj = 1: numberOfClasses
     paramsDASH(jj).lambda = 30 ; % frame rate in fps
-    paramsDASH(jj).qs= 1; % buffer cache/ prefetching threshold for startup in (segments), should actually use prefetchVec here, not 1 for all
+    paramsDASH(jj).qs= prefetchVec(jj); % buffer cache/ prefetching threshold for startup in (segments), should actually use prefetchVec here, not 1 for all
     paramsDASH(jj).segment = 60; % segment size in (frames)
     paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1); %[0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6; % list of quality levels
     paramsDASH(jj).Bmin=4;
@@ -129,7 +129,8 @@ s_idx = 1; % id of first user still in system
 numDroppedVec = zeros(1, numberOfClasses);
 countDroppedVec = zeros(1, numberOfClasses);
 numUsersMatrix = zeros(simulationDuration, numberOfClasses);
-avgPrefetchTimeClassandState = zeros(numberOfClasses, numberOfStates);
+AvgPrefetchTimeij = zeros(numberOfClasses, numberOfStates);% average prefetch time for class i in state j
+FreqMatrix = zeros(numberOfClasses, numberOfStates);
 fprintf('\n');
 for s = 1 : simulationDuration,  % in simulation slots
 %printf('slot nu %d \n',s);
@@ -156,7 +157,7 @@ for s = 1 : simulationDuration,  % in simulation slots
             %rateVec = rateVec / dr_lhs;
             rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
             
-            effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) .* (rateVec < minRateThresVec);
+            effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) .* (rateVec < minRateThresVec);% only those with less than 				minThres seem to balk
             effBalkRate = sum(effBalkRateVec);
             if(effBalkRate > 0)
                 nextBalk = s + max(1, round(simSlotsPerSec * exprnd( 1 / effBalkRate)));
@@ -190,14 +191,8 @@ for s = 1 : simulationDuration,  % in simulation slots
                     cntResSampling = cntResSampling+1;
                 end;
             end;
-            
-            % Set new balk time
-%             dr_lhs = sum(userVec);
-%             rateVec = zeros(1, length(maxUsersVec));
-%             rateVec(userVec > 0) = weightVec(userVec > 0) * C_0;% this will have the rates for all the classes at the current state
-%             rateVec = rateVec / dr_lhs;
-            rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
-            
+           
+            rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);            
             effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
                             .* (rateVec < minRateThresVec);
             effBalkRate = sum(effBalkRateVec);
@@ -210,15 +205,11 @@ for s = 1 : simulationDuration,  % in simulation slots
     end;   
     if (sum(userVec) > 0) % Whenever there are users in the system
         s_flag = 0; % flag which indicates s_idx changed.
-        % dr_lhs = sum(userVec);
-        % rateVec = zeros(1, length(maxUsersVec));
-        % rateVec(userVec > 0) = weightVec(userVec > 0) * C_0;
-        % rateVec = rateVec/dr_lhs;
         rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
         depFlag = 0;
         prevUserVec = userVec;
-        userVecUpdate = zeros(1, numberOfClasses); % this stores the overall decrement in each class due to user leaving the system
-        ScalarSystemState = codeUserVec(userVec);
+        ScalarSystemState = codeUserVec(userVec, maxUsersVec);
+        userVecUpdate = zeros(1, numberOfClasses);
         for i = 1 : length(user)
             if(user(i).state < 2)
 %                 if (0 == s_flag)%worthless check
@@ -230,24 +221,26 @@ for s = 1 : simulationDuration,  % in simulation slots
                 end
                 %printf('%d classOfUser \n',user(i).class);
                 [user(i), update] = DASH_KR(paramsDASH(user(i).class), segPerSlotVec(user(i).class), user(i), s, ...
-                    rateVec(user(i).class), userVec(user(i).class), bThres{user(i).class}, idThres{user(i).class}, ScalarSystemState);        
-                userVecUpdate(user(i).class) = UserVecUpdate(user(i).class) + update;
+                    rateVec(user(i).class), userVec(user(i).class), bThres{user(i).class}, idThres{user(i).class}, ScalarSystemState);
+                            
+                userVecUpdate(user(i).class) = userVecUpdate(user(i).class) + update;
+                
+                if(user(i).updateDelayMatrixFlag)
+                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;
+                	FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) =  FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) + 1;
+                	user(i).updateDelayMatrixFlag = 0;
+                end
             end
         end
         userVec = userVec + userVecUpdate;%update the number of users only at the end of the slot, cause they run in parallel in each slot.
         if (sum(userVecUpdate) < 0)
             depFlag = 1;
+        end
     end
     numUsersMatrix(s,:) = userVec;
     
     % User balking rate changed:
     if ( (s > 1) && (depFlag == 1) )
-        
-        % Change balk time as num. users changed
-%         dr_lhs = sum(userVec);
-%         rateVec = zeros(1,length(maxUsersVec));
-%         rateVec(userVec > 0) = weightVec(userVec > 0)*C_0;
-%         rateVec = rateVec/dr_lhs;
         rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
         
         effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
@@ -258,10 +251,9 @@ for s = 1 : simulationDuration,  % in simulation slots
         else
             nextBalk = simulationDuration + 1;
         end;
-    end;    
+    end;
 end
-
-
+AvgPrefetchTimeij = AvgPrefetchTimeij ./ FreqMatrix;
 %% Compute empirical distribution of number of users seen by incoming users
 pi = zeros(1, numberOfStates);
 % We ignore the first userThreshold users
@@ -317,7 +309,7 @@ for i=startUser:length(user),
         avgQualitySwitchesClass(idx) = avgQualitySwitchesClass(idx) + user(i).qualitySwitches - 1;
         
         avgPrefetchTimeClass(idx) = avgPrefetchTimeClass(idx) + ...
-            (user(i).prefetchTime - user(i).entryTime)/simSlotsPerSec;
+            user(i).prefetchTime/simSlotsPerSec;
         
         avgDownloadTimeClass(idx) = avgDownloadTimeClass(idx) + ...
             (user(i).exitTime - user(i).entryTime)/simSlotsPerSec;
