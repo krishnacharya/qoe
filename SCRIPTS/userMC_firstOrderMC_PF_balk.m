@@ -97,7 +97,7 @@ vQualMat = zeros(numClasses,numStates);
 rateMat = zeros(numClasses,numStates);
 for jj = 2:numStates,
     userVec = getUserVec(jj, maxUsersVec); % idx --> (i_1, i_2, ..., i_K)
-    nr_lhs = weightVec(userVec > 0)*channelRate;
+    nr_lhs = weightVec(userVec > 0) * channelRate;
     dr_lhs = sum(userVec); % price for PF
     rateMat((userVec > 0), jj) = nr_lhs/dr_lhs;
     for ii=1:numClasses,
@@ -179,7 +179,7 @@ for kk=1:numClasses,
 end;
 
 % Compute average prefetchDelay
-prefetchDelay = zeros(1,numClasses);
+prefetchDelay = zeros(1, numClasses);
 prefetchDelayclassState = zeros(numClasses, numStates);
 for kk=1:numClasses,
     effRateVec = zeros(1, numStates);
@@ -190,7 +190,7 @@ for kk=1:numClasses,
             actualUserVec(kk) = userVec(kk) + 1;
             iiPlusOne = codeUserVec(actualUserVec, maxUsersVec);
             effRateVec(ii) = rateMat(kk,iiPlusOne);% r(i + ej)
-            prefetchDelayclassState(kk, ii) = prefetchVec(kk) * lminVec(kk) / rateMat(kk, iiPlusOne);
+            prefetchDelayclassState(kk, ii) = prefetchVec(kk) * lminVec(kk) * secsPerSegVec(kk) / rateMat(kk, iiPlusOne);
         end;
     end;
     

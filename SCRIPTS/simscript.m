@@ -1,7 +1,7 @@
 function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
-    avgPrefetchTimeClass, AvgPrefetchTimeij,avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
-    simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
-    videorateMatrix, unifVec, avgUsersSim)
+    avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+    simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, secsPerSegVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
+    videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim)
 % balking added to Proportional fair sharing
 % unif for buffer spacing
 % 0: linear, 1: unif. spacing, 2: minimum reqd., else: ctx. video quality
@@ -48,18 +48,19 @@ paramsDASH(1 : numberOfClasses) = struct;
 minRateVec = zeros(1, numberOfClasses);
 %% DASH parameter settings
 for jj = 1: numberOfClasses
-    paramsDASH(jj).lambda = 30 ; % frame rate in fps
-    paramsDASH(jj).qs= prefetchVec(jj); % buffer cache/ prefetching threshold for startup in (segments), should actually use prefetchVec here, not 1 for all
-    paramsDASH(jj).segment = 60; % segment size in (frames)
-    paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1); %[0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6; % list of quality levels
-    paramsDASH(jj).Bmin=4;
-    paramsDASH(jj).Bc=10;
-    paramsDASH(jj).segPerSec = paramsDASH(jj).lambda / paramsDASH(jj).segment;% number of segments in one second
+    %paramsDASH(jj).lambda = 30 ; % frame rate in fps
+    paramsDASH(jj).qs = prefetchVec(jj); % buffer cache/ prefetching threshold for startup in (segments)
+    %paramsDASH(jj).segment = 60; % segment size in (frames)
+    paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1); %[0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6; % list of quality levels(Mbps)
+    paramsDASH(jj).Bmin = bminVec(jj);
+    paramsDASH(jj).Bc = bmaxVec(jj);
+    %paramsDASH(jj).segPerSec = paramsDASH(jj).lambda / paramsDASH(jj).segment;% number of segments in one second
+    paramsDASH(jj).segPerSec = 1.0 / secsPerSegVec(jj)
     minRateVec(jj) = min(paramsDASH(jj).l);
 end
 
 badStates = zeros(numberOfClasses, numberOfStates);
-for jj = 1 : numberOfStates,
+for jj = 1 : numberOfStates
     userVec = getUserVec(jj, maxUsersVec); % idx --> (i_1, i_2, ..., i_K)
     nr_lhs = weightVec(userVec > 0) * channelRate;
     dr_lhs = sum(userVec);% error can occur for all zero state
@@ -70,7 +71,7 @@ for jj = 1 : numberOfStates,
 end
 %% Simulation Parameters
 %simSlotsPerSec = max(10, round(10 * sum(arrivalRateVec)));%change this to max or sum of all arr
-simSlotsPerSec = ceil(10 * sum(arrivalRateVec));
+simSlotsPerSec = ceil(30 * sum(arrivalRateVec));
 secPerSlot = (1.0 / simSlotsPerSec)
 simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime * simSlotsPerSec); % in sim. slots
@@ -157,7 +158,7 @@ for s = 1 : simulationDuration,  % in simulation slots
             %rateVec = rateVec / dr_lhs;
             rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
             
-            effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) .* (rateVec < minRateThresVec);% only those with less than 				minThres seem to balk
+            effBalkRateVec = gammaVec .* userVec ./ (rateVec * simSlotsPerSec) .* (rateVec < minRateThresVec);% only those with less than 				minThres seem to balk
             effBalkRate = sum(effBalkRateVec);
             if(effBalkRate > 0)
                 nextBalk = s + max(1, round(simSlotsPerSec * exprnd( 1 / effBalkRate)));
@@ -221,12 +222,12 @@ for s = 1 : simulationDuration,  % in simulation slots
                 end
                 %printf('%d classOfUser \n',user(i).class);
                 [user(i), update] = DASH_KR(paramsDASH(user(i).class), segPerSlotVec(user(i).class), user(i), s, ...
-                    rateVec(user(i).class), userVec(user(i).class), bThres{user(i).class}, idThres{user(i).class}, ScalarSystemState);
+                    rateVec(user(i).class), bThres{user(i).class}, idThres{user(i).class}, ScalarSystemState);
                             
                 userVecUpdate(user(i).class) = userVecUpdate(user(i).class) + update;
                 
                 if(user(i).updateDelayMatrixFlag)
-                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;
+                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;% final time is in seconds
                 	FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) =  FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) + 1;
                 	user(i).updateDelayMatrixFlag = 0;
                 end

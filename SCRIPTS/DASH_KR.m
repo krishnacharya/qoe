@@ -1,4 +1,4 @@
-function [user, update] = DASH_KR(paramsDASH, segPerSlot, user, time, C_time, n_users, bThres, idThres, ScalarSystemState)
+function [user, update] = DASH_KR(paramsDASH, segPerSlot, user, time, C_time, bThres, idThres, ScalarSystemState)
 % The DASH code 
 % This function simulates the DASH code 
 % It is run every simulation slot and in each sim. slot it
@@ -87,6 +87,7 @@ if (user.state == 1)
     end
     if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
+        disp(user.starvedSegment)
         % Find prefetch time:
         % For initial prefetching, starvedSegment is set to -1
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with
@@ -96,6 +97,8 @@ if (user.state == 1)
     end
 end
 
+%printf('segments dowloaded in this slot = %d \n', downloaded);
+% disp(downloaded);
 played = segPerSlot * user.isPlaying;%we put 1 for the 2nd term, keeps playing for the whole slot
 user.bufferLevel = user.bufferLevel + downloaded - played; %stores the bufferLevel (in number of segments)
 
