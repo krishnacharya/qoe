@@ -38,5 +38,5 @@ for idx = 1:numStates,
                 * (gammaVec(ii) / vQualMat(ii,idx));  % may not be correct
         end
     end    
-    trm(idx,idx) = -sum(trm(idx,:)); % sum of the row why?
+    trm(idx,idx) = -sum(trm(idx,:));
 end
