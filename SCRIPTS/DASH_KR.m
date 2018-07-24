@@ -87,7 +87,7 @@ if (user.state == 1)
     end
     if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
-        disp(user.starvedSegment)
+        disp(user.isPlaying);
         % Find prefetch time:
         % For initial prefetching, starvedSegment is set to -1
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with

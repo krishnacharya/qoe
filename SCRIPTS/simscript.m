@@ -1,5 +1,5 @@
 function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
-    avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+    apt, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
     simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, secsPerSegVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
     videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim)
 % balking added to Proportional fair sharing
@@ -71,8 +71,8 @@ for jj = 1 : numberOfStates
 end
 %% Simulation Parameters
 %simSlotsPerSec = max(10, round(10 * sum(arrivalRateVec)));%change this to max or sum of all arr
-simSlotsPerSec = ceil(30 * sum(arrivalRateVec));
-secPerSlot = (1.0 / simSlotsPerSec)
+simSlotsPerSec = 50 * ceil(30 * sum(arrivalRateVec));
+secPerSlot = (1.0 / simSlotsPerSec);
 simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime * simSlotsPerSec); % in sim. slots
 startTime = floor(0.1 * simulationDuration); % discard initial 10 % samples
@@ -134,7 +134,6 @@ AvgPrefetchTimeij = zeros(numberOfClasses, numberOfStates);% average prefetch ti
 FreqMatrix = zeros(numberOfClasses, numberOfStates);
 fprintf('\n');
 for s = 1 : simulationDuration,  % in simulation slots
-%printf('slot nu %d \n',s);
     if (nextArrival == s) % Arrival occurs
         nextArrival = nextArrival + max(1, round(simSlotsPerSec * exprnd(1 / sum(arrivalRateVec))))
         userType = selectUserType(arrivalRateVec);        
@@ -296,16 +295,23 @@ avgQualityClass = zeros(1,numberOfClasses);
 avgPrefetchTimeClass = zeros(1,numberOfClasses);
 avgDownloadTimeClass = zeros(1,numberOfClasses);
 avgVideoDurationClass = zeros(1,numberOfClasses);
-
+apt = 0;
+c = 0;
 
 for i=startUser:length(user),
     if(user(i).state == 3)
         idx = user(i).class;
         countBalkVec(idx) = countBalkVec(idx) + 1;
     end;
+    if(user(i).prefetchTime ~= -1)
+        apt = apt + user(i).prefetchTime;
+        c = c + 1;
+    end;
+        
     if(user(i).state == 2)
         idx = user(i).class;
         countFinishVec(idx) = countFinishVec(idx) + 1;
+        
         
         avgQualitySwitchesClass(idx) = avgQualitySwitchesClass(idx) + user(i).qualitySwitches - 1;
         
@@ -355,4 +361,5 @@ else
     probDropClass = minusOneVec;
 end
 numUsers = sum(countFinishVec);
+apt = apt / c;
 % save results.mat; %For error checking
