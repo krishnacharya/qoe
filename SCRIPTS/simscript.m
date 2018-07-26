@@ -1,7 +1,5 @@
-function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, ...
-    apt, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
-    simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, secsPerSegVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, ...
-    videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim)
+function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+    simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, secsPerSegVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim)
 % balking added to Proportional fair sharing
 % unif for buffer spacing
 % 0: linear, 1: unif. spacing, 2: minimum reqd., else: ctx. video quality
@@ -71,7 +69,7 @@ for jj = 1 : numberOfStates
 end
 %% Simulation Parameters
 %simSlotsPerSec = max(10, round(10 * sum(arrivalRateVec)));%change this to max or sum of all arr
-simSlotsPerSec = 50 * ceil(30 * sum(arrivalRateVec));
+simSlotsPerSec = 10 * ceil(30 * sum(arrivalRateVec));
 secPerSlot = (1.0 / simSlotsPerSec);
 simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime * simSlotsPerSec); % in sim. slots
@@ -226,7 +224,7 @@ for s = 1 : simulationDuration,  % in simulation slots
                 userVecUpdate(user(i).class) = userVecUpdate(user(i).class) + update;
                 
                 if(user(i).updateDelayMatrixFlag)
-                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;% final time is in seconds
+                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user	(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;% final time is in seconds
                 	FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) =  FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) + 1;
                 	user(i).updateDelayMatrixFlag = 0;
                 end
@@ -295,19 +293,11 @@ avgQualityClass = zeros(1,numberOfClasses);
 avgPrefetchTimeClass = zeros(1,numberOfClasses);
 avgDownloadTimeClass = zeros(1,numberOfClasses);
 avgVideoDurationClass = zeros(1,numberOfClasses);
-apt = 0;
-c = 0;
-
 for i=startUser:length(user),
     if(user(i).state == 3)
         idx = user(i).class;
         countBalkVec(idx) = countBalkVec(idx) + 1;
-    end;
-    if(user(i).prefetchTime ~= -1)
-        apt = apt + user(i).prefetchTime;
-        c = c + 1;
-    end;
-        
+    end;            
     if(user(i).state == 2)
         idx = user(i).class;
         countFinishVec(idx) = countFinishVec(idx) + 1;
@@ -361,5 +351,4 @@ else
     probDropClass = minusOneVec;
 end
 numUsers = sum(countFinishVec);
-apt = apt / c;
 % save results.mat; %For error checking

@@ -1,8 +1,6 @@
 function [pye, pyeDirect, probBlocking, probFinishing, probVB, probStarvation, avgQualSwitches, ...
-    avgQuality, prefetchDelay, prefetchDelayclassState] = ...
-    userMC_firstOrderMC_PF_balk(arrivalRateVec, avgVideoSizeVec, ...
-    channelRate, gammaVec, thresVec, weightVec, maxUsersVec, ...
-    videoRateMat, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec)
+avgQuality, prefetchDelay, prefetchDelayclassState] = userMC_firstOrderMC_PF_balk(arrivalRateVec, avgVideoSizeVec, ...
+    channelRate, gammaVec, thresVec, weightVec, maxUsersVec, videoRateMat, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec)
 % AUTHOR: SUDHEER
 % LAST MODIFIED: 27 JUNE 2018
 
@@ -190,8 +188,8 @@ for kk=1:numClasses,
             actualUserVec = userVec; % tagged user does not see itself in system!
             actualUserVec(kk) = userVec(kk) + 1;
             iiPlusOne = codeUserVec(actualUserVec, maxUsersVec);
-            effRateVec(ii) = rateMat(kk,iiPlusOne);% r(i + ej)
-            prefetchDelayclassState(kk, ii) = prefetchVec(kk) * lminVec(kk) * secsPerSegVec(kk) / rateMat(kk, iiPlusOne);
+            effRateVec(ii) = rateMat(kk, iiPlusOne);% r(i + ej)
+            prefetchDelayclassState(kk, ii) = prefetchVec(kk) * lminVec(kk) * secsPerSegVec(kk) / effRateVec(ii);
         end;
     end;
     
