@@ -70,7 +70,7 @@ if (user.state == 1)
     %bitsRemainingforSegment = remProp * secsPerSeg * user.currentQuality;
     bitsRemainingforSegment = remProp * slotPerSeg * user.currentQuality;% current quality in bits per slot
     if (bitsRemainingforSegment < C_time) % C_time is the number of bits available in this simulation slot
-        %C_time = C_time - capacityUsed;
+        fprintf('%fbitsRemaining , %fC_time \n',bitsRemainingforSegment, C_time);
         downloaded = remProp;%number of segments downloaded in this slot            
         user.state = 0; %there are still some resources, DASH requests the next quality
         propSlot = bitsRemainingforSegment / C_time;
@@ -87,7 +87,6 @@ if (user.state == 1)
     end
     if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
-        disp(user.isPlaying);
         % Find prefetch time:
         % For initial prefetching, starvedSegment is set to -1
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with
@@ -112,4 +111,4 @@ end
 %else
 % user.state = 2;
 %update = 0;
-end
+end %function end

@@ -46,13 +46,10 @@ paramsDASH(1 : numberOfClasses) = struct;
 minRateVec = zeros(1, numberOfClasses);
 %% DASH parameter settings
 for jj = 1: numberOfClasses
-    %paramsDASH(jj).lambda = 30 ; % frame rate in fps
     paramsDASH(jj).qs = prefetchVec(jj); % buffer cache/ prefetching threshold for startup in (segments)
-    %paramsDASH(jj).segment = 60; % segment size in (frames)
     paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1); %[0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6; % list of quality levels(Mbps)
     paramsDASH(jj).Bmin = bminVec(jj);
     paramsDASH(jj).Bc = bmaxVec(jj);
-    %paramsDASH(jj).segPerSec = paramsDASH(jj).lambda / paramsDASH(jj).segment;% number of segments in one second
     paramsDASH(jj).segPerSec = 1.0 / secsPerSegVec(jj)
     minRateVec(jj) = min(paramsDASH(jj).l);
 end
@@ -68,23 +65,20 @@ for jj = 1 : numberOfStates
     end    
 end
 %% Simulation Parameters
-%simSlotsPerSec = max(10, round(10 * sum(arrivalRateVec)));%change this to max or sum of all arr
 simSlotsPerSec = 10 * ceil(30 * sum(arrivalRateVec));
 secPerSlot = (1.0 / simSlotsPerSec);
 simTime = avgUsersSim / sum(arrivalRateVec); % simulation duration in seconds
 simulationDuration = ceil(simTime * simSlotsPerSec); % in sim. slots
 startTime = floor(0.1 * simulationDuration); % discard initial 10 % samples
-userThreshold = 2 * sum(maxUsersVec); % discard userThreshold users, check this
+userThreshold = 2 * sum(maxUsersVec);
 segPerSlotVec = zeros(1, numberOfClasses);
 
 bThres = cell(1, numberOfClasses);
 idThres = cell(1, numberOfClasses);
 for jj = 1 : numberOfClasses
     segPerSlotVec(jj) = paramsDASH(jj).segPerSec / simSlotsPerSec;
-    %[IMP: Need to set video quality at the same scale as channel rate]
     paramsDASH(jj).l = paramsDASH(jj).l / simSlotsPerSec; % quality level in bits per sim. slot
-    paramsDASH(jj).rate = (paramsDASH(jj).l(end)-paramsDASH(jj).l(1))/...
-        (paramsDASH(jj).Bc-paramsDASH(jj).Bmin);
+    paramsDASH(jj).rate = (paramsDASH(jj).l(end) - paramsDASH(jj).l(1)) / (paramsDASH(jj).Bc-paramsDASH(jj).Bmin);%slope for the graph
     paramsDASH(jj).c = paramsDASH(jj).l(end) - paramsDASH(jj).rate * paramsDASH(jj).Bc;
     bThres{jj} = computeBufferSpacing(paramsDASH(jj).l, paramsDASH(jj).Bmin, paramsDASH(jj).Bc, unifVec(jj));
     idThres{jj} = 1 : length(bThres{jj});
@@ -155,13 +149,13 @@ for s = 1 : simulationDuration,  % in simulation slots
             %rateVec = rateVec / dr_lhs;
             rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
             
-            effBalkRateVec = gammaVec .* userVec ./ (rateVec * simSlotsPerSec) .* (rateVec < minRateThresVec);% only those with less than 				minThres seem to balk
-            effBalkRate = sum(effBalkRateVec);
-            if(effBalkRate > 0)
-                nextBalk = s + max(1, round(simSlotsPerSec * exprnd( 1 / effBalkRate)));
-            else
-                nextBalk = simulationDuration + 1;
-            end;            
+            % effBalkRateVec = gammaVec .* userVec ./ (rateVec * simSlotsPerSec) .* (rateVec < minRateThresVec);% only those with less than 				minThres seem to balk
+            % effBalkRate = sum(effBalkRateVec);
+            % if(effBalkRate > 0)
+            %     nextBalk = s + max(1, round(simSlotsPerSec * exprnd( 1 / effBalkRate)));
+            % else
+            %     nextBalk = simulationDuration + 1;
+            % end;            
         else
             numDroppedVec(userType) = numDroppedVec(userType) + 1;
             if(length(user) + sum(numDroppedVec) >= userThreshold)
@@ -175,32 +169,32 @@ for s = 1 : simulationDuration,  % in simulation slots
             end
         end
     end    
-    if (nextBalk == s)
-        userType = selectUserType(effBalkRateVec);
-        if(userVec(userType) > 0 && userType > 0)
-            cntResSampling = 0;
-            for i = s_idx:length(user)
-                if ((user(i).class == userType) && (user(i).state < 2))
-                    if(rand < 1/(userVec(userType) - cntResSampling))
-                        user(i).state = 3;
-                        userVec(userType) = userVec(userType) - 1;
-                        break;
-                    end
-                    cntResSampling = cntResSampling+1;
-                end;
-            end;
+    % if (nextBalk == s)
+    %     userType = selectUserType(effBalkRateVec);
+    %     if(userVec(userType) > 0 && userType > 0)
+    %         cntResSampling = 0;
+    %         for i = s_idx:length(user)
+    %             if ((user(i).class == userType) && (user(i).state < 2))
+    %                 if(rand < 1/(userVec(userType) - cntResSampling))
+    %                     user(i).state = 3;
+    %                     userVec(userType) = userVec(userType) - 1;
+    %                     break;
+    %                 end
+    %                 cntResSampling = cntResSampling+1;
+    %             end;
+    %         end;
            
-            rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);            
-            effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
-                            .* (rateVec < minRateThresVec);
-            effBalkRate = sum(effBalkRateVec);
-            if(effBalkRate > 0)
-                nextBalk = s + max(1, round(simSlotsPerSec*exprnd(1/effBalkRate)));
-            else
-                nextBalk = simulationDuration + 1;
-            end;
-        end;
-    end;   
+    %         rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);            
+    %         effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
+    %                         .* (rateVec < minRateThresVec);
+    %         effBalkRate = sum(effBalkRateVec);
+    %         if(effBalkRate > 0)
+    %             nextBalk = s + max(1, round(simSlotsPerSec*exprnd(1/effBalkRate)));
+    %         else
+    %             nextBalk = simulationDuration + 1;
+    %         end;
+    %     end;
+    % end;   
     if (sum(userVec) > 0) % Whenever there are users in the system
         s_flag = 0; % flag which indicates s_idx changed.
         rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
@@ -210,10 +204,6 @@ for s = 1 : simulationDuration,  % in simulation slots
         userVecUpdate = zeros(1, numberOfClasses);
         for i = 1 : length(user)
             if(user(i).state < 2)
-%                 if (0 == s_flag)%worthless check
-%                     s_idx = i;
-%                     s_flag = 1;
-%                 end;
                 if (badStates(user(i).class, codeUserVec(userVec, maxUsersVec)) == 1)
                     user(i).visitsBadState = 1;
                 end
@@ -224,8 +214,11 @@ for s = 1 : simulationDuration,  % in simulation slots
                 userVecUpdate(user(i).class) = userVecUpdate(user(i).class) + update;
                 
                 if(user(i).updateDelayMatrixFlag)
-                	AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user	(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;% final time is in seconds
-                	FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) =  FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) + 1;
+                    scalarState = codeUserVec(user(i).usersInSystem,  maxUsersVec);                    
+                	%AvgPrefetchTimeij(user(i).class, user(i).stateAtPrefetchStart) = AvgPrefetchTimeij(user(i).class, user	(i).stateAtPrefetchStart) + user(i).prefetchTime / simSlotsPerSec;
+                    AvgPrefetchTimeij(user(i).class, scalarState) = AvgPrefetchTimeij(user(i).class, scalarState) + user(i).prefetchTime / simSlotsPerSec;
+                	%FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) =  FreqMatrix(user(i).class, user(i).stateAtPrefetchStart) + 1;
+                    FreqMatrix(user(i).class, scalarState) =  FreqMatrix(user(i).class, scalarState) + 1;
                 	user(i).updateDelayMatrixFlag = 0;
                 end
             end
@@ -238,18 +231,18 @@ for s = 1 : simulationDuration,  % in simulation slots
     numUsersMatrix(s,:) = userVec;
     
     % User balking rate changed:
-    if ( (s > 1) && (depFlag == 1) )
-        rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
+    % if ( (s > 1) && (depFlag == 1) )
+    %     rateVec = getNewRateVec(userVec, weightVec, C_0, maxUsersVec);
         
-        effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
-                            .* (rateVec < minRateThresVec);
-        effBalkRate = sum(effBalkRateVec);
-        if(effBalkRate > 0)
-            nextBalk = s + max(1, round(simSlotsPerSec*exprnd(1/effBalkRate)));
-        else
-            nextBalk = simulationDuration + 1;
-        end;
-    end;
+    %     effBalkRateVec = gammaVec .* userVec ./ (rateVec .* simSlotsPerSec) ...
+    %                         .* (rateVec < minRateThresVec);
+    %     effBalkRate = sum(effBalkRateVec);
+    %     if(effBalkRate > 0)
+    %         nextBalk = s + max(1, round(simSlotsPerSec*exprnd(1/effBalkRate)));
+    %     else
+    %         nextBalk = simulationDuration + 1;
+    %     end;
+    % end;
 end
 AvgPrefetchTimeij = AvgPrefetchTimeij ./ FreqMatrix;
 %% Compute empirical distribution of number of users seen by incoming users
@@ -284,42 +277,34 @@ if(sum(pi_2) > 0)
 end
 
 %% Compute probability of starvation, # quality switches, avg quality, prefetching time
-countFinishVec = zeros(1,numberOfClasses);
-countBalkVec = zeros(1,numberOfClasses);
-starvCntVec = zeros(1,numberOfClasses);
-vBCntVec = zeros(1,numberOfClasses);
-avgQualitySwitchesClass = zeros(1,numberOfClasses);
-avgQualityClass = zeros(1,numberOfClasses);
-avgPrefetchTimeClass = zeros(1,numberOfClasses);
-avgDownloadTimeClass = zeros(1,numberOfClasses);
-avgVideoDurationClass = zeros(1,numberOfClasses);
-for i=startUser:length(user),
-    if(user(i).state == 3)
-        idx = user(i).class;
-        countBalkVec(idx) = countBalkVec(idx) + 1;
-    end;            
+countFinishVec = zeros(1, numberOfClasses);
+countBalkVec = zeros(1, numberOfClasses);
+starvCntVec = zeros(1, numberOfClasses);
+vBCntVec = zeros(1, numberOfClasses);
+avgQualitySwitchesClass = zeros(1, numberOfClasses);
+avgQualityClass = zeros(1, numberOfClasses);
+avgPrefetchTimeClass = zeros(1, numberOfClasses);
+avgDownloadTimeClass = zeros(1, numberOfClasses);
+avgVideoDurationClass = zeros(1, numberOfClasses);
+for i = startUser:length(user)
+    % if(user(i).state == 3)
+    %     idx = user(i).class;
+    %     countBalkVec(idx) = countBalkVec(idx) + 1;
+    % end;            
     if(user(i).state == 2)
         idx = user(i).class;
-        countFinishVec(idx) = countFinishVec(idx) + 1;
-        
-        
-        avgQualitySwitchesClass(idx) = avgQualitySwitchesClass(idx) + user(i).qualitySwitches - 1;
-        
-        avgPrefetchTimeClass(idx) = avgPrefetchTimeClass(idx) + ...
-            user(i).prefetchTime/simSlotsPerSec;
-        
-        avgDownloadTimeClass(idx) = avgDownloadTimeClass(idx) + ...
-            (user(i).exitTime - user(i).entryTime)/simSlotsPerSec;
-        
-        avgVideoDurationClass(idx) = avgVideoDurationClass(idx) + ...
-            user(i).totalNbrOfSegments/paramsDASH(idx).segPerSec;
-        
-        avgQualityClass(idx) = avgQualityClass(idx) + user(i).avgQuality;
-        
-        if(user(i).starv > 0)
+        countFinishVec(idx) = countFinishVec(idx) + 1; 
+        avgQualitySwitchesClass(idx) = avgQualitySwitchesClass(idx) + user(i).qualitySwitches - 1;        
+        avgPrefetchTimeClass(idx) = avgPrefetchTimeClass(idx) + user(i).prefetchTime / simSlotsPerSec;        
+        avgDownloadTimeClass(idx) = avgDownloadTimeClass(idx) + (user(i).exitTime - user(i).entryTime) / simSlotsPerSec;        
+        avgVideoDurationClass(idx) = avgVideoDurationClass(idx) + user(i).videoLength;% in seconds        
+        avgQualityClass(idx) = avgQualityClass(idx) + user(i).avgQuality;        
+        % if(user(i).starv > 0)
+        %     starvCntVec(idx) = starvCntVec(idx) + 1;
+        % end        
+        if(user(i).starvedSegment > 0) % if starvation then value is not -1, it is greater than 0
             starvCntVec(idx) = starvCntVec(idx) + 1;
-        end
-        
+        end     
         if(user(i).visitsBadState > 0)
             vBCntVec(idx) = vBCntVec(idx) + 1;
         end
@@ -327,14 +312,14 @@ for i=startUser:length(user),
     end
 end
 
-if(sum(countFinishVec == 0) == 0)
-    avgQualitySwitchesClass = avgQualitySwitchesClass./countFinishVec;
-    avgPrefetchTimeClass = avgPrefetchTimeClass./countFinishVec;
-    avgDownloadTimeClass = avgDownloadTimeClass./countFinishVec;
-    avgVideoDurationClass = avgVideoDurationClass./countFinishVec;
-    avgQualityClass = avgQualityClass./countFinishVec; %in bit per sim. slot
-    avgQualityClass = avgQualityClass*simSlotsPerSec; % in bps
-    probStarvClass = starvCntVec./countFinishVec;
+if(sum(countFinishVec == 0) == 0) % a check so that there is atleast one user in each class
+    avgQualitySwitchesClass = avgQualitySwitchesClass ./ countFinishVec;
+    avgPrefetchTimeClass = avgPrefetchTimeClass ./ countFinishVec;
+    avgDownloadTimeClass = avgDownloadTimeClass ./ countFinishVec;
+    avgVideoDurationClass = avgVideoDurationClass ./ countFinishVec;
+    avgQualityClass = avgQualityClass ./ countFinishVec; %in bit per sim. slot
+    avgQualityClass = avgQualityClass * simSlotsPerSec; % in bps
+    probStarvClass = starvCntVec ./ countFinishVec;
     probVBClass = vBCntVec./countFinishVec;
     probFinishClass = countFinishVec ./ (countFinishVec + countBalkVec);
     probDropClass = countDroppedVec ./ (countFinishVec + countDroppedVec);
