@@ -29,6 +29,7 @@ classdef User
         prefetchTime = -1;
         entryTime = -1;
         exitTime = -1;
+        prefFlag = 1;
     end    
     methods     
         

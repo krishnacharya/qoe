@@ -79,8 +79,8 @@ numStates = prod(maxUsersVec + 1);
 epsilon = 1e-5;
 
 % Compute steady state distribution for User Markov Chain
-lminVec = zeros(1,numClasses);
-lmaxVec = zeros(1,numClasses);
+lminVec = zeros(1, numClasses);
+lmaxVec = zeros(1, numClasses);
 
 sim_time = clock;
 filename = sprintf('analysis_PF_results_%02d-%02d-%02d-%02d-%02d.txt', sim_time(1:5));
@@ -91,17 +91,16 @@ for ii=1:numClasses
     lmaxVec(ii) = max( removeZeros(videoRateMat(ii,:), epsilon) );
 end;
 
-vQualMat = zeros(numClasses,numStates);
-rateMat = zeros(numClasses,numStates);
-for jj = 2:numStates,
+vQualMat = zeros(numClasses, numStates);
+rateMat = zeros(numClasses, numStates);
+for jj = 2 : numStates,
     userVec = getUserVec(jj, maxUsersVec); % idx --> (i_1, i_2, ..., i_K)
     nr_lhs = weightVec(userVec > 0) * channelRate;
     dr_lhs = sum(userVec); % price for PF
-    rateMat((userVec > 0), jj) = nr_lhs/dr_lhs;
-    for ii=1:numClasses,
+    rateMat((userVec > 0), jj) = nr_lhs / dr_lhs;
+    for ii = 1 : numClasses,
         if(userVec(ii) > 0)
-            vQualMat(ii, jj) = max(lminVec(ii), min(lmaxVec(ii), ...
-                rateMat(ii, jj)));
+            vQualMat(ii, jj) = max(lminVec(ii), min(lmaxVec(ii), rateMat(ii, jj)));
         end
     end;
 end
@@ -109,6 +108,7 @@ end
 trm = encodeTRM_balk(arrivalRateVec, avgVideoSizeVec, gammaVec, thresVec, ...
     vQualMat, rateMat, maxUsersVec);
 pye = getStationaryDist(trm2tpm(trm));
+pye = pye';
 pyeDirect = getStationaryDistDirect(trm);
 probBlocking = computeProbBlocking(pye, maxUsersVec);
 
@@ -138,7 +138,7 @@ for kk=1:numClasses,
     validStates = listStates(badStates(kk,:) == 0 | badStates(kk,:) == 1); % valid state can be good or bad.
     probFinishingMat(kk, validStates) = computeProbFinishing(trm2{kk}, badStates(kk,:));
     temp = probFinishingMat(kk, :);
-    pyeTimesprobFinishingMat(kk, :) = pye' .* temp; %pye is 21x1 in shape 
+    pyeTimesprobFinishingMat(kk, :) = pye .* temp; %pye is 1*21
     probFinishing(kk) = sum(pyeTimesprobFinishingMat(kk, :));
     probBlocking(kk) = probBlocking(kk) / (probFinishing(kk) + probBlocking(kk));
 end;
@@ -218,7 +218,7 @@ end
 
 
 fprintf(fid,'\nAnalysis steady state distr: ');
-printVec(fid, pye', length(pye));
+printVec(fid, pye, length(pye));
 
 for jj = 1:length(maxUsersVec),
     fprintf(fid,'\nAnalysis FINAL Res: class %d ', jj);

@@ -45,7 +45,14 @@ if (user.state == 0)
             user.currentQuality = min(paramsDASH.l(end), user.currentQuality);
         end
     end
+    if(user.prefFlag) % throughout pref give lowest quality.
+        user.currentQuality =  paramsDASH.l(1);
+    end
     %(buffer based decision) ENDS HERE
+    
+%     if(user.currentSegment < paramsDASH.qs)
+%         user.currentQuality = paramsDASH.l(1);
+%     end
     
     if (length(bThres) > 1) % DISCRETE quality levels
         if(abs(user.currentQuality - user.prevQuality) >= epsilon)
@@ -92,6 +99,7 @@ if (user.state == 1)
         if (user.starvedSegment ==  -1)% -1 occurs only once, the prefetching time, that is what we initialized with
             user.prefetchTime = user.slotsUsed;% prefetch time in terms of number of slots used
             user.updateDelayMatrixFlag = 1;
+            user.prefFlag = 0;
         end;
     end
 end
