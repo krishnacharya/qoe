@@ -29,7 +29,11 @@ classdef User
         prefetchTime = -1;
         entryTime = -1;
         exitTime = -1;
-        prefFlag = 1;
+        
+        prefFlag = 1; % this is keeping currentqual = lmin throughout prefetching
+%         rateBased = 1; % this is to choose currentquality for a segment based on rate.
+%         rateBasedQual = -1;
+%         firstFlag = 1;
     end    
     methods     
         

@@ -1,4 +1,4 @@
-function [pi, pi_2, user,probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
     simscript(arrivalRateVec, prefetchVec,avgVideoSizeVec, secsPerSegVec, channelRate, gammaVec, minRateThresVec, weightVec, maxUsersVec, videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim)
 % balking added to Proportional fair sharing
 % unif for buffer spacing
@@ -324,7 +324,7 @@ if(sum(countFinishVec == 0) == 0) % a check so that there is atleast one user in
     probFinishClass = countFinishVec ./ (countFinishVec + countBalkVec);
     probDropClass = countDroppedVec ./ (countFinishVec + countDroppedVec);
 else
-    minusOneVec = -1*ones(1,numberOfClasses);
+    minusOneVec = -1 * ones(1,numberOfClasses);
     avgQualitySwitchesClass = minusOneVec;
     avgPrefetchTimeClass = minusOneVec;
     avgDownloadTimeClass = minusOneVec;
@@ -336,4 +336,5 @@ else
     probDropClass = minusOneVec;
 end
 numUsers = sum(countFinishVec);
+avgTimeinSystem = getAvgTimeinSystem(user, simSlotsPerSec);
 % save results.mat; %For error checking

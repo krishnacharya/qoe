@@ -48,12 +48,15 @@ if (user.state == 0)
     if(user.prefFlag) % throughout pref give lowest quality.
         user.currentQuality =  paramsDASH.l(1);
     end
-    %(buffer based decision) ENDS HERE
-    
-%     if(user.currentSegment < paramsDASH.qs)
-%         user.currentQuality = paramsDASH.l(1);
+%     if(user.rateBased)% rate based selection for each segment
+%         [val, index] = max(C_time < paramsDASH.l);
+%         if(user.firstFlag)
+%             user.rateBasedQual = paramsDASH.l(index - 1);
+%             user.firstFlag = 0; 
+%         end
+%         user.currentQuality = user.rateBasedQual;
 %     end
-    
+    %(buffer based decision) ENDS HERE    
     if (length(bThres) > 1) % DISCRETE quality levels
         if(abs(user.currentQuality - user.prevQuality) >= epsilon)
             user.qualitySwitches = user.qualitySwitches + 1;
@@ -100,6 +103,7 @@ if (user.state == 1)
             user.prefetchTime = user.slotsUsed;% prefetch time in terms of number of slots used
             user.updateDelayMatrixFlag = 1;
             user.prefFlag = 0;
+%             user.rateBased = 0;
         end;
     end
 end

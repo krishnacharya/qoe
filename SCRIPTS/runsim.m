@@ -39,7 +39,7 @@ avgUsersSim = 100; % E.g. 2000
 
 % DASH parameters, bmin, bmax, q_a (prefetch segments) and number of seconds per 
 % video segment respectively
-bminVec = 4; bmaxVec = 10; prefetchVec = 10; secsPerSegVec = 2; % Vector valued
+bminVec = 4; bmaxVec = 10; prefetchVec = 2; secsPerSegVec = 2; % Vector valued
 
 % Parameter which decides buffer thresholds, 0: linear, 1: thresholds uniformly 
 % spaced, 2: minimum required
@@ -59,13 +59,13 @@ fid = fopen(filename,'a+');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%ANALYSIS%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[piSim, pi_2Sim, userListSim, probStarvSim, probVBSim, probFinishSim, probDropClass, avgQualitySim, avgQualitySwitchesSim, PrefetchDelaySim, PrefetchDelayijSim, FreqMatrix, avgDownloadTimeSim, avgVideoDurationSim, numUsers, simTime] = ... 
+[piSim, pi_2Sim, userListSim, avgTimeinSystem, probStarvSim, probVBSim, probFinishSim, probDropClass, avgQualitySim, avgQualitySwitchesSim,prefetchDelaySim,PrefetchDelayijSim, FreqMatrix, avgDownloadTimeSim, avgVideoDurationSim, numUsers, simTime] = ... 
 simscript(arVec, prefetchVec, avSizeVec, secsPerSegVec, cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec, videoRateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim);
 
-[piAnal, pyeDirectAnal, probBlockingAnal, probFinishAnal, probVBAnal, probStarAnal, avgQualSwitchesAnal, ...
-    avgQualityAnal, prefetchDelayAnal, prefetchDelayijAnal] = ...
-    userMC_firstOrderMC_PF_balk(arVec, avSizeVec, cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec, ...
-    videoRateMatrix, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec);
+% [piAnal, pyeDirectAnal, probBlockingAnal, probFinishAnal, probVBAnal, probStarAnal, avgQualSwitchesAnal, ...
+%     avgQualityAnal, prefetchDelayAnal, prefetchDelayijAnal] = ...
+%     userMC_firstOrderMC_PF_balk(arVec, avSizeVec, cRate, gammaVec, minRateThresVec, wtVec, maxUsersVec, ...
+%     videoRateMatrix, prefetchVec, secsPerSegVec, bminVec, bmaxVec, unifVec);
 
 % fprintf(fid,'Pi user perspective\n');
 % printVec(fid, pi, length(pi));
