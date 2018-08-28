@@ -1,5 +1,5 @@
 function trm = encodeTRM_balk(arrivalRateVec, averageVideoSizeVec, gammaVec, ...
-    thresVec, vQualMat, rateMat, maxUsersVec)
+    thresVec, vQualMat, throughputVec, maxUsersVec)
 % Encode the trm for the system
 % INPUT:
 % rateMat: Matrix of average channel rates as seen by users in different states
@@ -22,7 +22,7 @@ for idx = 1:numStates,
         end
     end
     % Encode departure and user balking for each class
-    for ii=1:length(maxUsersVec),
+    for ii = 1 : length(maxUsersVec),
         nextUserVec = userVec;
         if userVec(ii) > 0,
             nextUserVec(ii) = userVec(ii) - 1;
@@ -30,7 +30,7 @@ for idx = 1:numStates,
             
             % User departure due to finishing service 
             trm(idx, nextIdx) = userVec(ii)* ...
-                (rateMat(ii,idx)/vQualMat(ii,idx))/averageVideoSizeVec(ii);
+                (throughputVec(userVec(ii)) / vQualMat(ii,idx)) / averageVideoSizeVec(ii);
             
             % User balking due to poor video quality
             trm(idx, nextIdx) = trm(idx, nextIdx) + userVec(ii)* ...

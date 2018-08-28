@@ -1,4 +1,4 @@
-function [avgQualVec, avgQualSwitchVec ] = computeAvgQuality_firstOrderMC_balk(trm, badStatesIdx, vQVec, rateMat, secsPerSeg, videoRateVec, probFinishing, maxUsersVec, classId)
+function [avgQualVec, avgQualSwitchVec ] = computeAvgQuality_firstOrderMC_balk(trm, badStatesIdx, vQVec, throughputVec, secsPerSeg, videoRateVec, probFinishing, maxUsersVec, classId)
 % Code to compute analytically average video bitrate and average number of switches per class.
 % INPUT:
 % OUTPUT: 
@@ -40,7 +40,7 @@ for ii = nonAbsorbingStates,
     actualUserVec = userVec; % tagged user does not see itself in system!
     actualUserVec(classId) = userVec(classId) + 1;
     iiPlusOne = codeUserVec(actualUserVec, maxUsersVec);
-    r = rateMat(iiPlusOne);
+    r = throughputVec(actualUserVec);
     if ((r > lmin) && (r < lmax))
         l1 = max(videoRateVec(videoRateVec <= r));
         l2 = min(videoRateVec(videoRateVec >= r));

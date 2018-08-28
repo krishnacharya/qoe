@@ -1,5 +1,5 @@
 function [probStarVec]= computeProbStarvation_firstOrderMC_balk(trm, ...
-    badStatesIdx, absorbingState, vQualVec, rateVec, prefetch, bVec, ...
+    badStatesIdx, absorbingState, vQualVec, throughputVec, prefetch, bVec, ...
     slope, secsPerSeg, lVec, maxUsersVec, classId, probFinishing)
 % Compute prob. starvation corresponding to each entry state.
 % We account for first order effect, i.e., we consider the possibility of 
@@ -58,8 +58,8 @@ for ii = wGoodNeighbours,
     actualUserVec = userVec; % tagged user does not see itself in system!
     actualUserVec(classId) = userVec(classId) + 1;
     iiPlusOne = codeUserVec(actualUserVec, maxUsersVec);
-    T_B0(ii) = b/((rateVec(iiPlusOne))/min(lVec)) + ...
-        b/(1 - (rateVec(iiPlusOne))/min(lVec));
+    T_B0(ii) = b/((throughputVec(iiPlusOne))/min(lVec)) + ...
+        b/(1 - (throughputVec(iiPlusOne))/min(lVec));
     pB0(ii) = exp(trm(ii,ii)*T_B0(ii));
 end;
 
@@ -89,7 +89,7 @@ for ii = wBadNeighbours,
             actualUserVec = userVec; % tagged user does not see itself in system!
             actualUserVec(classId) = userVec(classId) + 1;
             jjPlusOne = codeUserVec(actualUserVec, maxUsersVec);
-            T_B1 = b/(1 - (rateVec(jjPlusOne))/min(lVec));
+            T_B1 = b/(1 - (throughputVec(jjPlusOne))/min(lVec));
             pB1{ii}(jj) = exp(trm(jj,jj)*T_B1);
         end;
     end;

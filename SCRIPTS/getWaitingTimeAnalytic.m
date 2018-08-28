@@ -1,16 +1,15 @@
-function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(channelRate, videoQualVec, lamda, avgVidDuration, maxUsers)
+function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapacity, videoQualVec, lamda, avgVidDuration, maxUsers)
     %state is number of users in the system
     rho = lamda * avgVidDuration;
     thrptVec = zeros(1, maxUsers);%throughput vector
     bitRateVec = zeros(1, maxUsers);
     phiVec = ones(1, maxUsers);%allocation function
-    for i = 1 : maxUsers
-        thrptVec(i) = channelRate / i;
-        [val, idx] =  min(thrptVec(i) > videoQualVec);
+    for i = 1 : maxUsers      
+        [val, idx] =  min(throughputVec(i) > videoQualVec);
         bitRateVec(i) = videoQualVec(idx - 1);%choose bitrate as close to available thrpt
         prodCum = 1;
         for j = 1 : i
-            prodCum = prodCum * (channelRate / bitRateVec(j));
+            prodCum = prodCum * (channelCapacity / bitRateVec(j));
         end
         phiVec(i) = prodCum;
     end

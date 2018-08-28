@@ -1,5 +1,5 @@
 function trm = encodeTaggedTRM_balk(arrivalRateVec, averageVideoSizeVec, ...
-    gammaVec, thresVec, vQualMat, rateMat, maxUsersVec, classId)
+    gammaVec, thresVec, vQualMat, throughputVec, maxUsersVec, classId)
 % The code gives the TRM corresponding to tagged user Markov chain
 % Here we code what the user sees in the system (state of system is what the user sees)
 % 
@@ -37,8 +37,7 @@ for idx = 1:numStates,
             if userVec(ii) > 0,
                 nextUserVec(ii) = userVec(ii) - 1;
                 nextIdx = codeUserVec(nextUserVec, maxUsersVec);
-                trm(idx, nextIdx) = trm(idx, nextIdx) + userVec(ii)* ...
-                    (rateMat(ii,idx)/vQualMat(ii,idx))/averageVideoSizeVec(ii);
+                trm(idx, nextIdx) = trm(idx, nextIdx) + userVec(ii) * throughputVec(userVec(ii)) / (vQualMat(ii,idx) * averageVideoSizeVec(ii));
             end
         else % for tagged user class
             if userVec(ii) < maxUsersVec(ii) && userVec(ii) > 0,
@@ -47,11 +46,9 @@ for idx = 1:numStates,
                 
                 actualUserVec = userVec; % tagged user does not see itself in system!
                 actualUserVec(ii) = userVec(ii) + 1;
-                idxPlusOne = codeUserVec(actualUserVec, maxUsersVec);
-                trm(idx, nextIdx) = trm(idx, nextIdx) + userVec(ii)* ... % tagged user does not see itself in system!
-                    (rateMat(ii,idxPlusOne)/vQualMat(ii,idxPlusOne))/...
-                    averageVideoSizeVec(ii);
-            end;
+                idxPlusOne = codeUserVec(actualUserVec, maxUsersVec);        
+                trm(idx, nextIdx) = trm(idx, nextIdx) + userVec(ii) * throughputVec(actualUserVec) / (vQualMat(ii, idxPlusOne) * averageVideoSizeVec(ii));
+            end
         end
     end
     
@@ -90,8 +87,7 @@ for idx = 1:numStates,
         actualUserVec(classId) = userVec(classId) + 1;
         idxPlusOne = codeUserVec(actualUserVec, maxUsersVec);
         trm(idx, nextIdx) = trm(idx, nextIdx) + ... % tagged user does not see itself in system!
-            (rateMat(classId,idxPlusOne)/vQualMat(classId,idxPlusOne))/...
-            averageVideoSizeVec(classId);
+            (throughputVec(actualUserVec) / vQualMat(classId,idxPlusOne)) / averageVideoSizeVec(classId);
     end;
     
     % Encode tagged user balking (absorbing state (N_1, N_2, ...; N_K) + 1)

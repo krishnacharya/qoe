@@ -95,7 +95,7 @@ if (user.state == 1)
         user.stateAtPrefetchStart = ScalarSystemState;%needs to be another field in the functions input
         user.inPrefetchStart = 0;
     end
-    if (~user.isPlaying && user.bufferLevel >= paramsDASH.qs)% the prefetching threshold is in terms of number of segments
+    if (~user.isPlaying && (user.bufferLevel >= paramsDASH.qs))% the prefetching threshold is in terms of number of segments
         user.isPlaying = 1;
         % Find prefetch time:
         % For initial prefetching, starvedSegment is set to -1
