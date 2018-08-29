@@ -1,0 +1,2 @@
+runsim;
+save('testVals');

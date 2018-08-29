@@ -6,6 +6,7 @@
 % arVec = 0.01; % E.g. [0.01, 0.01]
 M = containers.Map();
 lambdas = 0.01 : 0.01: 0.2;% arrival rates
+% lambdas = 0.01;
 nOfLambdas = length(lambdas);
 M('lambda') = 0.01;
 % Avg. Video size [\theta_1, \theta_2, ...]
