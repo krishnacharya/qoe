@@ -40,7 +40,7 @@ function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFini
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %picking relevant variable from the Map
-arrivalRateVec = M('lamda');
+arrivalRateVec = M('lambda');
 prefetchVec = M('prefetchVec');
 avgVideoSizeVec = M('avSizeVec');
 secsPerSegVec = M('secsPerSegVec');

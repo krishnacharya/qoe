@@ -71,7 +71,7 @@ avgQuality, prefetchDelay, prefetchDelayclassState] = analyticUserMC(M)
 
 % prefetchDelay: prefetch/startup delay 
 
-arrivalRateVec = M('lamda');
+arrivalRateVec = M('lambda');
 avgVideoSizeVec = M('avSizeVec');
 %channelRate
 gammaVec = M('gammaVec'); 

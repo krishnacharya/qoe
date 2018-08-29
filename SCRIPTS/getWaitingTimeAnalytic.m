@@ -1,7 +1,14 @@
-function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapacity, videoQualVec, lamda, avgVidDuration, maxUsers)
+function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(M)
     %state is number of users in the system
-    rho = lamda * avgVidDuration;
-    thrptVec = zeros(1, maxUsers);%throughput vector
+    throughputVec = M('throughputVec');
+    channelCapacity = M('channelCapacity');
+    videoQualVec = M('videoRateMatrix');
+    lambda = M('lambda');
+    avgVidDuration = M('avSizeVec');
+    maxUsers = M('maxUsersVec');
+    GainVec = M('GainVec');
+    %%%%%%%%%%%%%
+    rho = lambda * avgVidDuration;   
     bitRateVec = zeros(1, maxUsers);
     phiVec = ones(1, maxUsers);%allocation function
     for i = 1 : maxUsers      
@@ -9,7 +16,7 @@ function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapac
         bitRateVec(i) = videoQualVec(idx - 1);%choose bitrate as close to available thrpt
         prodCum = 1;
         for j = 1 : i
-            prodCum = prodCum * (channelCapacity / bitRateVec(j));
+            prodCum = prodCum * (channelCapacity / bitRateVec(j)) * GainVec(j);
         end
         phiVec(i) = prodCum;
     end
@@ -23,7 +30,7 @@ function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapac
         ExpNoOfUsers = ExpNoOfUsers + i * rho^i / phiVec(i);
     end
     ExpNoOfUsers = ExpNoOfUsers / Jm;
-    WT = ExpNoOfUsers / lamda;%by little's law
+    WT = ExpNoOfUsers / lambda;%by little's law
 end
 
 
