@@ -1,12 +1,6 @@
-function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(M)
+function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapacity, videoQualVec,lambda, avgVidDuration, maxUsers,...
+    GainVec)
     %state is number of users in the system
-    throughputVec = M('throughputVec');
-    channelCapacity = M('channelCapacity');
-    videoQualVec = M('videoRateMatrix');
-    lambda = M('lambda');
-    avgVidDuration = M('avSizeVec');
-    maxUsers = M('maxUsersVec');
-    GainVec = M('GainVec');
     %%%%%%%%%%%%%
     rho = lambda * avgVidDuration;   
     bitRateVec = zeros(1, maxUsers);

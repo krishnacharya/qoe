@@ -1,5 +1,6 @@
 function [pye, pyeDirect, probBlocking, probFinishing, probVB, probStarvation, avgQualSwitches, ...
-avgQuality, prefetchDelay, prefetchDelayclassState] = analyticUserMC(M)
+avgQuality, prefetchDelay, prefetchDelayclassState] = analyticUserMC(arrivalRateVec, avgVideoSizeVec, gammaVec, thresVec, maxUsersVec,...
+videoRateMat,prefetchVec,secsPerSegVec,bminVec,bmaxVec,unifVec, throughputVec)
 % AUTHOR: SUDHEER
 % LAST MODIFIED: 27 JUNE 2018
 
@@ -71,20 +72,20 @@ avgQuality, prefetchDelay, prefetchDelayclassState] = analyticUserMC(M)
 
 % prefetchDelay: prefetch/startup delay 
 
-arrivalRateVec = M('lambda');
-avgVideoSizeVec = M('avSizeVec');
-%channelRate
-gammaVec = M('gammaVec'); 
-thresVec = M('minRateThresVec'); 
-% weightVec
-maxUsersVec = M('maxUsersVec');
-videoRateMat = M('videoRateMatrix');
-prefetchVec = M('prefetchVec');
-secsPerSegVec = M('secsPerSegVec');
-bminVec = M('bminVec');
-bmaxVec = M('bmaxVec');
-unifVec = M('unifVec'); 
-throughputVec = M('throughputVec');
+% arrivalRateVec = M('lambda');
+% avgVideoSizeVec = M('avSizeVec');
+% %channelRate
+% gammaVec = M('gammaVec'); 
+% thresVec = M('minRateThresVec'); 
+% % weightVec
+% maxUsersVec = M('maxUsersVec');
+% videoRateMat = M('videoRateMatrix');
+% prefetchVec = M('prefetchVec');
+% secsPerSegVec = M('secsPerSegVec');
+% bminVec = M('bminVec');
+% bmaxVec = M('bmaxVec');
+% unifVec = M('unifVec'); 
+% throughputVec = M('throughputVec');
 
 % MAIN code for ANALYSIS
 numClasses = length(maxUsersVec);

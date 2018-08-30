@@ -1,5 +1,6 @@
 function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
-    simscript2(M)
+    simscript2(arrivalRateVec, prefetchVec, avgVideoSizeVec, secsPerSegVec, gammaVec, minRateThresVec, ...
+    maxUsersVec, videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim, throughputVec)
 % balking added to Proportional fair sharing
 % unif for buffer spacing
 % 0: linear, 1: unif. spacing, 2: minimum reqd., else: ctx. video quality
@@ -40,21 +41,21 @@ function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFini
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %picking relevant variable from the Map
-arrivalRateVec = M('lambda');
-prefetchVec = M('prefetchVec');
-avgVideoSizeVec = M('avSizeVec');
-secsPerSegVec = M('secsPerSegVec');
-%channelRate 
-gammaVec = M('gammaVec'); 
-minRateThresVec = M('minRateThresVec');
-%weightVec
-maxUsersVec = M('maxUsersVec');
-videorateMatrix = M('videoRateMatrix');
-unifVec = M('unifVec'); 
-bminVec = M('bminVec');
-bmaxVec = M('bmaxVec');
-avgUsersSim = M('avgUsersSim');
-throughputVec = M('throughputVec');
+% arrivalRateVec = M('lambda');
+% prefetchVec = M('prefetchVec');
+% avgVideoSizeVec = M('avSizeVec');
+% secsPerSegVec = M('secsPerSegVec');
+% %channelRate 
+% gammaVec = M('gammaVec'); 
+% minRateThresVec = M('minRateThresVec');
+% %weightVec
+% maxUsersVec = M('maxUsersVec');
+% videorateMatrix = M('videoRateMatrix');
+% unifVec = M('unifVec'); 
+% bminVec = M('bminVec');
+% bmaxVec = M('bmaxVec');
+% avgUsersSim = M('avgUsersSim');
+% throughputVec = M('throughputVec');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 rand('state', 42) ;%just seeding with 42
 numberOfClasses = length(maxUsersVec);

@@ -1,4 +1,4 @@
-function usrAvgThrptVec = getThroughput(M)
+function usrAvgThrptVec = getThroughput(n, channelStatesVec, channelStatesDistr,alpha, beta)
 %get the throughput for a user when there are n users in the system.
 %for now assume we have only 1 class, so each of their average throughputs
 %should be the same in the long run
@@ -7,11 +7,11 @@ function usrAvgThrptVec = getThroughput(M)
 % channelStatesDistr = [0.2, 0.5, 0.3];%must sum to 1, prob distr
 
 % picking relevant variable from input dictionary
-n = M('n');%number of users e.g PF(10)
-channelStatesVec = M('channelStatesVec');
-channelStatesDistr = M('channelStatesDistr');
-alpha = M('alpha');
-beta = M('beta');
+% n = M('n');%number of users e.g PF(10)
+% channelStatesVec = M('channelStatesVec');
+% channelStatesDistr = M('channelStatesDistr');
+% alpha = M('alpha');
+% beta = M('beta');
 
 slots = 1e5;
 usrAvgThrptVec = ones(1, n) * 1e6;%Avg Throughput vector, update after each slot

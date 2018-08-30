@@ -1,15 +1,13 @@
-function [GLimit,GainVec] = getGainLimit(M)
+function [GLimit,GainVec] = getGainLimit(channelStatesVec, channelStatesDistr,alpha, beta, maxUsersVec)
 % GLimit or G*, is required for verfying the stability of the system for
 % certain values of lamda, pho < R G* / bmin
-R = M('channelCapacity');
-maxUserVec = M('maxUsersVec');
+R = channelStatesDistr * channelStatesVec';
 prev = 0;
 i = 1;
-GainVec = zeros(1, maxUserVec);
+GainVec = zeros(1, maxUsersVec);
     while true
-        M('n') = i;
-        GainVec(i) = i * mean(getThroughput(M)) / R;
-        if((abs(GainVec(i) - prev) / prev <= 0.001) && (i > maxUserVec)) % stop if less than 0.1% change
+        GainVec(i) = i * mean(getThroughput(i, channelStatesVec, channelStatesDistr,alpha, beta)) / R;
+        if((abs(GainVec(i) - prev) / prev <= 0.001) && (i > maxUsersVec)) % stop if less than 0.1% change
             break;
         end
         prev = GainVec(i);
