@@ -1,4 +1,4 @@
-function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime] = ...
+function [pi, pi_2, user, avgTimeinSystem, probStarvClass, probVBClass, probFinishClass, probDropClass, avgQualityClass, avgQualitySwitchesClass, avgPrefetchTimeClass, AvgPrefetchTimeij, FreqMatrix, avgDownloadTimeClass, avgVideoDurationClass, numUsers, simTime, avgSquaredQualDiff] = ...
     simscript2(arrivalRateVec, prefetchVec, avgVideoSizeVec, secsPerSegVec, gammaVec, minRateThresVec, ...
     maxUsersVec, videorateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim, throughputVec)
 % balking added to Proportional fair sharing
@@ -65,7 +65,7 @@ minRateVec = zeros(1, numberOfClasses);
 %% DASH parameter settings
 for jj = 1: numberOfClasses
     paramsDASH(jj).qs = prefetchVec(jj); % buffer cache/ prefetching threshold for startup in (segments)
-    paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1); %[0.2 0.3 0.48 0.75 1.2 1.85 2.85 4.3 5.3]*1e6; % list of quality levels(Mbps)
+    paramsDASH(jj).l = removeZeros(videorateMatrix(jj,:), 1e-1);
     paramsDASH(jj).Bmin = bminVec(jj);
     paramsDASH(jj).Bc = bmaxVec(jj);
     paramsDASH(jj).segPerSec = 1.0 / secsPerSegVec(jj)
@@ -96,12 +96,9 @@ for jj = 1 : numberOfClasses
     bThres{jj} = computeBufferSpacing(paramsDASH(jj).l, paramsDASH(jj).Bmin, paramsDASH(jj).Bc, unifVec(jj));
     idThres{jj} = 1 : length(bThres{jj});
 end
-
-
 %% the arrival events follow the poisson distribution
 % interarrival time in sim. slots
 nextArrival = 1 + round(simSlotsPerSec * exprnd(1 / sum(arrivalRateVec)));
-
 nextBalk = 0;
 effBalkRateVec = zeros(size(gammaVec));
 %% structure of user
@@ -137,6 +134,7 @@ countDroppedVec = zeros(1, numberOfClasses);
 numUsersMatrix = zeros(simulationDuration, numberOfClasses);
 AvgPrefetchTimeij = zeros(numberOfClasses, numberOfStates);% average prefetch time for class i in state j
 FreqMatrix = zeros(numberOfClasses, numberOfStates);
+%prolongationfactor = arrivalRateVec * 100;
 fprintf('\n');
 for s = 1 : simulationDuration,  % in simulation slots
     if (nextArrival == s) % Arrival occurs
@@ -300,6 +298,7 @@ avgQualityClass = zeros(1, numberOfClasses);
 avgPrefetchTimeClass = zeros(1, numberOfClasses);
 avgDownloadTimeClass = zeros(1, numberOfClasses);
 avgVideoDurationClass = zeros(1, numberOfClasses);
+avgSquaredQualDiff = zeros(1, numberOfClasses);
 for i = startUser:length(user)
     % if(user(i).state == 3)
     %     idx = user(i).class;
@@ -312,7 +311,8 @@ for i = startUser:length(user)
         avgPrefetchTimeClass(idx) = avgPrefetchTimeClass(idx) + user(i).prefetchTime / simSlotsPerSec;        
         avgDownloadTimeClass(idx) = avgDownloadTimeClass(idx) + (user(i).exitTime - user(i).entryTime) / simSlotsPerSec;        
         avgVideoDurationClass(idx) = avgVideoDurationClass(idx) + user(i).videoLength;% in seconds        
-        avgQualityClass(idx) = avgQualityClass(idx) + user(i).avgQuality;        
+        avgQualityClass(idx) = avgQualityClass(idx) + user(i).avgQuality;
+        avgSquaredQualDiff(idx) = avgSquaredQualDiff(idx) + user(i).squaredQualDiff;
         % if(user(i).starv > 0)
         %     starvCntVec(idx) = starvCntVec(idx) + 1;
         % end        
@@ -332,6 +332,7 @@ if(sum(countFinishVec == 0) == 0) % a check so that there is atleast one user in
     avgDownloadTimeClass = avgDownloadTimeClass ./ countFinishVec;
     avgVideoDurationClass = avgVideoDurationClass ./ countFinishVec;
     avgQualityClass = avgQualityClass ./ countFinishVec; %in bit per sim. slot
+    avgSquaredQualDiff = avgSquaredQualDiff ./ countFinishVec;
     avgQualityClass = avgQualityClass * simSlotsPerSec; % in bps
     probStarvClass = starvCntVec ./ countFinishVec;
     probVBClass = vBCntVec./countFinishVec;
@@ -348,7 +349,9 @@ else
     probVBClass = minusOneVec;
     probFinishClass = minusOneVec;
     probDropClass = minusOneVec;
+    avgSquaredQualDiff = minusOneVec;
 end
 numUsers = sum(countFinishVec);
-avgTimeinSystem = getAvgTimeinSystem(user, simSlotsPerSec);
+% avgTimeinSystem = getAvgTimeinSystem(user, simSlotsPerSec);
+avgTimeinSystem = -1;
 % save results.mat; %For error checking

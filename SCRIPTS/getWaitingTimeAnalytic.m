@@ -6,8 +6,12 @@ function [WT, ExpNoOfUsers] = getWaitingTimeAnalytic(throughputVec, channelCapac
     bitRateVec = zeros(1, maxUsers);
     phiVec = ones(1, maxUsers);%allocation function
     for i = 1 : maxUsers      
-        [val, idx] =  min(throughputVec(i) > videoQualVec);
-        bitRateVec(i) = videoQualVec(idx - 1);%choose bitrate as close to available thrpt
+        [val, idx] =  min(throughputVec(i) >= videoQualVec);
+        if(idx >= 2)
+            bitRateVec(i) = videoQualVec(idx - 1);%choose bitrate as close to available thrpt
+        else
+            bitRateVec(i) = videoQualVec(1);
+        end
         prodCum = 1;
         for j = 1 : i
             prodCum = prodCum * (channelCapacity / bitRateVec(j)) * GainVec(j);

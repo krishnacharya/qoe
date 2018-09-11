@@ -1,4 +1,4 @@
-function usrAvgThrptVec = getThroughput(n, channelStatesVec, channelStatesDistr,alpha, beta)
+function thrpt = getThroughput(n, channelStatesVec, channelStatesDistr,alpha, beta, videoRateMatrix)
 %get the throughput for a user when there are n users in the system.
 %for now assume we have only 1 class, so each of their average throughputs
 %should be the same in the long run
@@ -15,10 +15,10 @@ function usrAvgThrptVec = getThroughput(n, channelStatesVec, channelStatesDistr,
 
 slots = 1e5;
 usrAvgThrptVec = ones(1, n) * 1e6;%Avg Throughput vector, update after each slot
+usrInstThrptVec = zeros(1, n);
 % alpha=1;
 % beta=1;%for prop sharing in LTE
     for i = 1 : slots
-        usrInstThrptVec = zeros(1, n);
         for j = 1 : n
            channelType = selectUserType(channelStatesDistr);
            usrInstThrptVec(j) = channelStatesVec(channelType);
@@ -29,5 +29,12 @@ usrAvgThrptVec = ones(1, n) * 1e6;%Avg Throughput vector, update after each slot
         temp = usrAvgThrptVec(chosenIdx);
         usrAvgThrptVec = usrAvgThrptVec * (i-1) / i;
         usrAvgThrptVec(chosenIdx) = (temp * (i-1) + usrInstThrptVec(chosenIdx)) / i;
+    end
+    [val, pos] = max(mean(usrAvgThrptVec) < videoRateMatrix);
+    disp(pos);
+    if(pos  >= 2)
+        thrpt = videoRateMatrix(pos - 1);
+    else
+        thrpt = mean(usrAvgThrptVec);
     end
 end

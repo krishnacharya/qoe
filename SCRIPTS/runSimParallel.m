@@ -4,7 +4,11 @@
 % User Arrival rate vector [lambda_1, lambda_2, ...] where \lambda_k = class-k 
 % arrival rate.
 % arVec = 0.01; % E.g. [0.01, 0.01]
+% load('sep10TwentyLambdas');
+% averageQualitySim = avgQualitySimVec;%loading the simulated 20 qualities
+% clearvars -except averageQualitySim;
 lambdas = 0.01 : 0.01: 0.2;% arrival rates
+% lambdas = 0.1;
 nOfLambdas = length(lambdas);
 % Avg. Video size [\theta_1, \theta_2, ...]
 avSizeVec = 200; % E.g. [1200, 600]
@@ -33,18 +37,21 @@ maxUsersVec = 20; % E.g., [10, 20]
 % Row-i of videoRateMatrix gives the available bit rates for class-i.
 % The vector of rates must be in ascending order.
 % Append vector with zeros if the lengths are not equal
-videoRateMatrix = [0.2, 0.3, 0.48, 0.75, 1.2, 1.85, 2.85, 4.3, 5.3] * 1e6; 
-
+% videoRateMatrix = [0.2, 0.3, 0.48, 0.75, 1.2, 1.85, 2.85, 4.3, 5.3] * 1e6; 
+bminVec = 2; bmaxVec = 16;
+bVec = [2, 4, 6, 10, 16];
+lmin = 0.5 * 1e6; lmax = 5 * 1e6;
+videoRateMatrix = getVideoQualVec(bVec, lmin, lmax);% min video quality is 0.5Mbps, max is 5 Mbps
 % The simulation will simulate (on average) avgUsersSim users entering the system
-avgUsersSim = 1000;% E.g. 2000
+avgUsersSim = 200;% E.g. 2000
 
 % DASH parameters, bmin, bmax, q_a (prefetch segments) and number of seconds per 
 % video segment respectively
-bminVec = 4; bmaxVec = 10; prefetchVec = 2; secsPerSegVec = 2; % Vector valued
+prefetchVec = 2; secsPerSegVec = 2; % Vector valued
 
 % Parameter which decides buffer thresholds, 0: linear, 1: thresholds uniformly 
 % spaced, 2: minimum required
-unifVec = 1; % vector valued
+unifVec = 0; % vector valued
 
 % For throughput calculations
 channelStatesVec = [2, 3, 5] * 1e6;% 1Mbps, 3 Mbps and 5 Mbps
@@ -53,9 +60,11 @@ throughputVec = zeros(1, maxUsersVec); % currently for 1 class
 channelCapacity = channelStatesVec * channelStatesDistr'; %channel state when only 1 user can run R
 alpha=1; beta=1; %exponenets used in priority calculation
 for i = 1 : maxUsersVec
-    throughputVec(i) = mean(getThroughput(i, channelStatesVec, channelStatesDistr,alpha, beta));%throughput when there are i users in the system
+    throughputVec(i) = getThroughput(i, channelStatesVec, channelStatesDistr,alpha, beta, videoRateMatrix);
+    %throughput when there are i users in the system but flooring it to
+    %bitrate
 end
-[Glimit, GainVec] = getGainLimit(channelStatesVec, channelStatesDistr, alpha, beta, maxUsersVec);%independent of lamda
+[Glimit, GainVec] = getGainLimit(channelStatesVec, channelStatesDistr, alpha, beta, maxUsersVec, videoRateMatrix);%independent of lamda
 % % SET this to directory where you have simulation scripts (multi class with user balking)
 % simulationDir = '~/SCRIPTS';
 % 
@@ -77,17 +86,19 @@ StabilityRatioVec = zeros(1,nOfLambdas);
 
 piSimVec = cell(1, nOfLambdas); pi_2SimVec = cell(1, nOfLambdas); probStarvSimVec = zeros(1, nOfLambdas); probDropClassSimVec = zeros(1, nOfLambdas);
 probVBSimVec = zeros(1, nOfLambdas); probFinishSimVec = zeros(1, nOfLambdas); prefetchDelaySimVec = zeros(1, nOfLambdas);
-avgQualitySwitchesSimVec = zeros(1, nOfLambdas); avgQualitySimVec = zeros(1, nOfLambdas), PrefetchDelayijSimVec = cell(1, nOfLambdas);
+avgQualitySwitchesSimVec = zeros(1, nOfLambdas); avgQualitySimVec = zeros(1, nOfLambdas); PrefetchDelayijSimVec = cell(1, nOfLambdas);
+avgSquaredQualDiffVec = zeros(1, nOfLambdas);
 
 piAnalVec = cell(1, nOfLambdas); pyeDirectAnalVec = cell(1, nOfLambdas); probBlockingAnalVec = zeros(1, nOfLambdas); probFinishAnalVec = zeros(1, nOfLambdas);
 probVBAnalVec = zeros(1, nOfLambdas); probStarvAnalVec = zeros(1, nOfLambdas); prefetchDelayAnalVec = zeros(1, nOfLambdas);
-avgQualitySwitchesAnalVec = zeros(1, nOfLambdas); avgQualityAnalVec = zeros(1, nOfLambdas), PrefetchDelayijAnalVec = cell(1, nOfLambdas);
+avgQualitySwitchesAnalVec = zeros(1, nOfLambdas); avgQualityAnalVec = zeros(1, nOfLambdas); PrefetchDelayijAnalVec = cell(1, nOfLambdas);
 
+% averageQualitySim = zeros(1, nOfLambdas);
 parfor i = 1:nOfLambdas
     %Simulation
     %M('lambda') = lambdas(i);
     [piSimVec{i}, pi_2SimVec{i}, userListSim, avgTimeinSystem, probStarvSimVec(i), probVBSimVec(i), probFinishSimVec(i), probDropClassSimVec(i), ...
-    avgQualitySimVec(i), avgQualitySwitchesSimVec(i),prefetchDelaySimVec(i),PrefetchDelayijSimVec{i}, FreqMatrix, avgDownloadTimeSim, avgVideoDurationSim, numUsers, simTime] = ... 
+    avgQualitySimVec(i), avgQualitySwitchesSimVec(i),prefetchDelaySimVec(i),PrefetchDelayijSimVec{i}, FreqMatrix, avgDownloadTimeSim, avgVideoDurationSim, numUsers, simTime, avgSquaredQualDiffVec(i)] = ... 
     simscript2(lambdas(i), prefetchVec, avSizeVec, secsPerSegVec, gammaVec, minRateThresVec, ...
     maxUsersVec, videoRateMatrix, unifVec, bminVec, bmaxVec, avgUsersSim, throughputVec) 
     ExN = 0;

@@ -66,6 +66,7 @@ if (user.state == 0)
             user.qualitySwitches = user.qualitySwitches + 1;
         end            
     end
+%     user.squaredQualDiff = user.squaredQualDiff + (user.currentQuality - averageQualitySim) ^ 2 %computed from previous run
     user.avgQuality = user.avgQuality + user.currentQuality;%paramsDASH.l is in bits per slot!
     user.prevQuality = user.currentQuality;
     user.state = 1;            

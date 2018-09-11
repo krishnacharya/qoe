@@ -12,9 +12,9 @@ function bVec = computeBufferSpacing(videoRateVec, bmin, bmax, unif)
 lmax = max(videoRateVec);
 lmin = min(videoRateVec);
 if (unif == 0)
-    m = (bmax - bmin)/(lmax - lmin);
-    c = bmax - m*lmax;
-    bVec = m*videoRateVec + c;
+    m = (lmax - lmin) / (bmax - bmin);
+    c = lmax - m * bmax;
+    bVec = (videoRateVec - c) / m;
 elseif (unif == 1)
     bVec = linspace(bmin, bmax, length(videoRateVec));
 elseif (unif == 2)
